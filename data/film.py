@@ -13,6 +13,7 @@ class Films(SqlAlchemyBase, UserMixin, SerializerMixin):
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     director = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    average_rating = sqlalchemy.Float(sqlalchemy.Integer)
+    average_rating = sqlalchemy.Column(sqlalchemy.Integer)
+    poster_path = sqlalchemy.Column(sqlalchemy.String)
     user_id = sqlalchemy.Column(sqlalchemy.Integer, ForeignKey('users.id'))
     author = relationship("User", back_populates="films")

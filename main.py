@@ -1,9 +1,13 @@
 from flask import Flask, render_template, redirect, url_for
 from forms.login_form import LoginForm
+import uuid
+from werkzeug.utils import secure_filename
 from forms.register_form import RegisterForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from data.users import User
 from dotenv import load_dotenv
+from forms.add_film import FilmForm
+from data.film import Films
 from data import db_session
 import getpass
 import os
@@ -13,25 +17,35 @@ db_session.global_init("db/database.db")
 
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['UPLOAD_FOLDER'] = 'static/posters'
+
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+login_manager.login_view = 'login'
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    db_sess = db_session.create_session()
+    films = db_sess.query(Films).all()
+
+    return render_template('index.html', films=films)
 
 
 @app.route('/registration', methods=['GET', 'POST'])
-def reqistration():
+def registration():
     form = RegisterForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         if (db_sess.query(User)
-           .filter((User.email == form.email.data) | (User.username == form.username.data))
+           .filter(
+               (User.email == form.email.data) | (
+                   User.username == form.username.data)
+               )
            .first()):
-            return render_template('registration.html', 
+            return render_template('registration.html',
                                    form=form,
                                    message="Пользователь с таким email или логином уже существует")
         user = User(
@@ -47,11 +61,12 @@ def reqistration():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(
-            User.email == form.email.data,
             User.username == form.username.data
             ).first()
         if user and user.check_password(form.password.data):
@@ -61,11 +76,6 @@ def login():
                                message="Неправильный логин или пароль",
                                form=form)
     return render_template('login.html', title='Авторизация', form=form)
-
-
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    pass
 
 
 @app.cli.command("create-admin")
@@ -104,6 +114,29 @@ def logout():
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.get(User, user_id)
+
+
+@app.route('/add_film', methods=['GET', 'POST'])
+@login_required
+def add_film():
+    new_film = FilmForm()
+    if new_film.validate_on_submit():
+
+        db_sess = db_session.create_session()
+
+        films = Films(
+            title=new_film.title.data,
+            description=new_film.description.data,
+            director=new_film.director.data,
+            average_rating=new_film.rating.data,
+            user_id=current_user.id
+        )
+        db_sess.add(films)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('add_film.html',
+                           title='Добавление работы',
+                           form=new_film)
 
 
 if __name__ == '__main__':
