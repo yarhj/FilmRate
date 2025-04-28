@@ -60,7 +60,6 @@
     font-size: 1.2rem;
 }
 
-/* Стили для информации о фильме */
 .film-info {
     padding: 20px;
 }
@@ -89,7 +88,6 @@
     font-size: 0.9rem;
 }
 
-/* Стили для рейтинга со звездами */
 .stars {
     --percent: calc(var(--rating) / 5 * 100%);
     display: inline-block;
@@ -112,7 +110,6 @@
     color: #e67e22;
 }
 
-/* Стили для кнопки */
 .details-button {
     background: #3498db;
     color: white;

@@ -1,11 +1,11 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, flash
 from forms.login_form import LoginForm
-import uuid
-from werkzeug.utils import secure_filename
 from forms.register_form import RegisterForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+import uuid
 from data.users import User
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
 from forms.add_film import FilmForm
 from data.film import Films
 from data import db_session
@@ -17,7 +17,7 @@ db_session.global_init("db/database.db")
 
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['UPLOAD_FOLDER'] = 'static/posters'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 
 login_manager = LoginManager()
@@ -121,14 +121,24 @@ def load_user(user_id):
 def add_film():
     new_film = FilmForm()
     if new_film.validate_on_submit():
-
         db_sess = db_session.create_session()
+        poster_file = new_film.poster.data
+        if poster_file:
+            filename = secure_filename(poster_file.filename)
+            unique_filename = str(uuid.uuid4()) + '_' + filename
+            poster_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            poster_file.save(poster_path)
+
+            poster_db_path = os.path.join('uploads', unique_filename)
+        else:
+            poster_db_path = None
 
         films = Films(
             title=new_film.title.data,
             description=new_film.description.data,
             director=new_film.director.data,
             average_rating=new_film.rating.data,
+            poster_path=poster_db_path,
             user_id=current_user.id
         )
         db_sess.add(films)

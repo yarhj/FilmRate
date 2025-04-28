@@ -13,4 +13,5 @@ class FilmForm(FlaskForm):
                                   (6, '6'), (7, '7'), (8, '8'), (9, '9'), (10, '10')],
                          coerce=int,
                          validators=[DataRequired()])
+    poster = FileField('Прекрепите постер', validators=[FileRequired()])
     submit = SubmitField('Применить')

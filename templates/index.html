@@ -3,7 +3,7 @@
 {% block content %}
 <link rel="stylesheet" href="/static/films.css">
 <div class="films-container">
-    <h1 class="films-header">Наша фильмотека</h1>
+    <h1 class="films-header">Фильмотека</h1>
     
     <div class="films-grid">
         {% for film in films %}
@@ -14,7 +14,7 @@
             </div>
             {% else %}
             <div class="film-poster no-poster">
-                <span>Нет постера</span>
+                <span>Нет постера</span>    
             </div>
             {% endif %}
             
@@ -27,7 +27,7 @@
                 <div class="film-rating">
                     <span class="label">Рейтинг:</span>
                     <span class="rating-value">{{ film.average_rating }}</span>
-                    <div class="stars" style="--rating: {{ film.average_rating }};"></div>
+                    <div class="stars" style="--rating: {{ film.average_rating // 2}};"></div>
                 </div>
                 <div class="film-description">
                     <p>{{ film.description|truncate(150) }}</p>
