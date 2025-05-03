@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/film_detail.css">
+
+<div class="film-detail">
+    <div class="film-poster">
+        <img src="{{ film.poster_path }}">
+    </div>
+
+    <div class="film-info">
+        <h1>{{ film.title }}</h1>
+        <p><strong>Режиссер:</strong> {{ film.director }}</p>
+        <p><strong>Сценарист:</strong> {{ film.screenwriter }}</p>
+        <p><strong>Рейтинг:</strong> {{ film.average_rating }}/10</p>
+        <p><strong>Длительность:</strong> {{ film.duration }}</p>
+        <p><strong>Премьера:</strong> {{ film.premiere }}</p>
+
+        <div class="film-description">
+            <h3>Описание</h3>
+            <p>{{ film.description }}</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

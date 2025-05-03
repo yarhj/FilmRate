@@ -10,14 +10,14 @@
         <div class="film-card">
             {% if film.poster_path %}
             <div class="film-poster">
-                <img src="{{ url_for('static', filename=film.poster_path) }}" alt="{{ film.title }}" class="poster-image">
+                <img src="{{ film.poster_path }}">
             </div>
             {% else %}
             <div class="film-poster no-poster">
                 <span>Нет постера</span>    
             </div>
             {% endif %}
-            
+
             <div class="film-info">
                 <h2 class="film-title">{{ film.title }}</h2>
                 <div class="film-director">
@@ -32,7 +32,7 @@
                 <div class="film-description">
                     <p>{{ film.description|truncate(150) }}</p>
                 </div>
-                <button class="details-button">Подробнее</button>
+                <a class="btn details-button" href="{{ url_for('film_detail', film_id=film.id) }}">Подробнее</a>
             </div>
         </div>
         {% endfor %}

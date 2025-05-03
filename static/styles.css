@@ -21,6 +21,12 @@ body {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.no-account  a{
+	display: flex;
+	color: #555;
+	justify-content: center;
+}
+
 h2 {
 	text-align: center;
 }
@@ -69,28 +75,3 @@ nav.navbar {
 	padding-bottom: 5px;
 	min-height: auto;
 }
-
-.rating-container {
-	display: flex;
-	gap: 10px;
-}
-
-.rating-container input[type="radio"] {
-	display: none;
-}
-
-.rating-container label {
-	cursor: pointer;
-	font-size: 1.5rem;
-	color: #ddd;
-}
-
-.rating-container input[type="radio"]:checked~label {
-	color: #ffc107;
-}
-
-.rating-container label:hover,
-.rating-container label:hover~label {
-	color: #ffc107;
-}
-

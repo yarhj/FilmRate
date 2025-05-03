@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/my_films.css">
+<div class="films-container">
+    <h1 class="films-header">Мои фильмы</h1>
+    
+    {% if films %}
+    <div class="films-grid">
+        {% for film in films %}
+        <div class="film-card">
+            <div class="film-poster">
+                <img src="{{ url_for('static', filename='film.poster_path') }}" alt="{{ film.title }}" class="poster-image">
+            </div>
+            
+            <div class="film-info">
+                <h2 class="film-title">{{ film.title }}</h2>
+                
+                <div class="film-director">
+                    <span class="label">Режиссер:</span> {{ film.director }}
+                </div>
+                
+                <div class="film-rating">
+                    <span class="label">Рейтинг:</span>
+                    <span class="rating-value">{{ film.average_rating }}</span>
+                    <div class="stars" style="--rating: {{ film.average_rating  // 2}};"></div>
+                </div>
+                
+                <p class="film-description">{{ film.description|truncate(150) }}</p>
+                
+                <div class="film-actions">
+                    <a href="{{ url_for('film_detail', film_id=film.id) }}" class="details-button">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-films">
+        <p>Вы пока не добавили ни одного фильма.</p>
+        <a href="{{ url_for('add_film') }}" class="btn">Добавить фильм</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
