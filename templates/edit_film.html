@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Редактирование: {{ film.title }}</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ form.csrf_token }}
+        {% if message %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+        {% endif %}
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows=5) }}
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                {{ form.director.label(class="form-label") }}
+                {{ form.director(class="form-control") }}
+            </div>
+            <div class="col-md-6">
+                {{ form.screenwriter.label(class="form-label") }}
+                {{ form.screenwriter(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                {{ form.duration.label(class="form-label") }}
+                {{ form.duration(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.rating.label(class="form-label") }}
+                {{ form.rating(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.premiere.label(class="form-label") }}
+                {{ form.premiere(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.poster.label(class="form-label") }}
+            {{ form.poster(class="form-control") }}
+            {% if film.poster_path %}
+            <div class="mt-2">
+                <small>Текущий постер:</small>
+                <img src="{{ url_for('static', filename=film.poster_path) if not film.poster_path.startswith('http') else film.poster_path }}"
+                    class="img-thumbnail mt-2" style="max-height: 200px">
+            </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{{ url_for('film_detail', film_id=film.id) }}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,4 +1,3 @@
-/* Основные стили */
 .films-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -49,11 +48,10 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
 }
 
 .film-card:hover .poster-image {
-    transform: scale(1.05);
+    transform: scale(1.0);
 }
 
 .film-info {

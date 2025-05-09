@@ -1,2 +1,1 @@
-from . import users
-from . import film
+from . import film, users, reviews

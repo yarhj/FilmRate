@@ -1,25 +1,31 @@
-from flask import Flask, render_template, redirect, url_for, abort
-from forms.login_form import LoginForm
-from forms.register_form import RegisterForm
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-import uuid
-import requests
-from flask.cli import AppGroup
-from data.users import User
-from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
-from forms.add_film import FilmForm
-from data.film import Films
-from data import db_session
 import getpass
 import os
+import uuid
+
+import requests
+from dotenv import load_dotenv
+from flask import Flask, abort, flash, redirect, render_template, url_for, request
+from flask.cli import AppGroup
+from flask_login import (LoginManager, current_user, login_required,
+                         login_user, logout_user)
+from werkzeug.utils import secure_filename
+
+from data import db_session
+from data.film import Films
+from data.users import User
+from data.reviews import Reviews
+from forms.add_film import FilmForm
+from forms.login_form import LoginForm
+from forms.review_form import ReviewForm
+from forms.edit_forms import EditFilmForm
+from forms.register_form import RegisterForm
 
 app = Flask(__name__)
 db_session.global_init("db/database.db")
 
 load_dotenv()
 
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.config['SECRET_KEY'] = '123'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
@@ -66,7 +72,7 @@ def import_popular():
                 duration=details_data.get('runtime', 0),
                 average_rating=movie.get('vote_average', 0),
                 premiere=movie.get('release_date', '')[:4],
-                poster_path=f"https://image.tmdb.org/t/p/w500{movie['poster_path']}" if movie.get('poster_path') else None,
+                poster_path=f"https://www.themoviedb.org/t/p/w500{movie['poster_path']}" if movie.get('poster_path') else None,
                 user_id=1
             )
             db_sess.add(film)
@@ -165,8 +171,57 @@ def create_admin():
     print(f"Администратор {username} успешно создан!")
 
 
+@app.route('/edit_film/<int:film_id>', methods=['GET', 'POST'])
+@login_required
+def edit_film(film_id):
+    db_sess = db_session.create_session()
+    film = db_sess.query(Films).get(film_id)
+    if not film:
+        abort(404)
+        return redirect(url_for('index'))
+
+    if film.user_id != current_user.id and not current_user.is_admin:
+        abort(403)
+        return redirect(url_for('film_detail', film_id=film.id))
+
+    form = EditFilmForm()
+
+    if form.validate_on_submit():
+        form.populate_obj(film)
+
+        if form.poster.data:
+            if film.poster_path and not film.poster_path.startswith('http'):
+                old_path = os.path.join(app.config['UPLOAD_FOLDER'], film.poster_path.split('/')[-1])
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+
+            filename = secure_filename(form.poster.data.filename)
+            unique_name = f"{uuid.uuid4()}_{filename}"
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+            form.poster.data.save(save_path)
+            film.poster_path = f"uploads/{unique_name}"
+
+        db_sess.commit()
+        return redirect(url_for('film_detail', film_id=film.id))
+
+    elif request.method == 'GET':
+        form.title.data = film.title
+        form.description.data = film.description
+        form.director.data = film.director
+        form.screenwriter.data = film.screenwriter
+        form.duration.data = film.duration
+        form.rating.data = film.average_rating
+        form.premiere.data = film.premiere
+
+    return render_template('edit_film.html',
+                           form=form,
+                           film=film,
+                           title='Редактирование фильма')
+
+
 @app.route('/my_films')
-def my_films(): 
+@login_required
+def my_films():
     db_sess = db_session.create_session()
     user_films = db_sess.query(Films).filter(Films.user_id == current_user.id).all()
     return render_template("my_films.html", films=user_films)
@@ -183,6 +238,28 @@ def logout():
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.get(User, user_id)
+
+
+@app.route('/review/<int:film_id>', methods=['GET', 'POST'])
+@login_required
+def review(film_id):
+    db_sess = db_session.create_session()
+    film = db_sess.query(Films).get(film_id)
+    if not film:
+        abort(404)
+    form = ReviewForm()
+
+    if form.validate_on_submit():
+        review = Reviews(
+            review=form.review.data,
+            review_rating=form.rating.data,
+            user_id=current_user.id,
+            film_id=film.id,
+        )
+        db_sess.add(review)
+        db_sess.commit()
+        return redirect(url_for('film_detail', film_id=film.id))
+    return render_template('review.html', form=form, film=film, title=f"Отзыв на фильм {film.title}")
 
 
 @app.route('/add_film', methods=['GET', 'POST'])
@@ -222,4 +299,4 @@ def add_film():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=8080)

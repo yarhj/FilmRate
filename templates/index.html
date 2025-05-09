@@ -4,17 +4,18 @@
 <link rel="stylesheet" href="/static/films.css">
 <div class="films-container">
     <h1 class="films-header">Фильмотека</h1>
-    
+
     <div class="films-grid">
         {% for film in films %}
         <div class="film-card">
             {% if film.poster_path %}
             <div class="film-poster">
-                <img src="{{ film.poster_path }}">
+                <img src="{{ url_for('static', filename=film.poster_path) if not film.poster_path.startswith('http') else film.poster_path }}"
+                    alt="{{ film.title }}">
             </div>
             {% else %}
             <div class="film-poster no-poster">
-                <span>Нет постера</span>    
+                <span>Нет постера</span>
             </div>
             {% endif %}
 
