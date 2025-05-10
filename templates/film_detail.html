@@ -22,10 +22,19 @@
             <p>{{ film.description }}</p>
         </div>
         <div class="form-group">
-            <a href="{{ url_for('edit_film', film_id=film.id) }} "button" class="btn btn-secondary">Редактировать</a>
-            <a href="{{ url_for('review', film_id=film.id) }} "button" class="btn btn-secondary">Написать отзыв</a>
+            <a href="{{ url_for('edit_film', film_id=film.id) }} " button" class="btn btn-secondary">Редактировать</a>
+            <a href="{{ url_for('review', film_id=film.id) }} " button" class="btn btn-secondary">Написать отзыв</a>
         </div>
     </div>
+</div>
+{% if review %}
+<div class="review">
+    {% for review, username in reviews_with_users %}
+    <img src="/static/img/6522516.png" style="height: 25px; padding-right: 5px;">{{ username }}<br>
+    Оценка: <span style="color: #e67e22; font-weight: bold;">{{ review.review_rating }}/10</span>
+    <div class="review-text">{{ review.review }}</div>
+    {% endfor %}
+    {% endif %}
 </div>
 
 {% endblock %}

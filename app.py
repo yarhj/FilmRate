@@ -25,7 +25,7 @@ db_session.global_init("db/database.db")
 
 load_dotenv()
 
-app.config['SECRET_KEY'] = '123'
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
@@ -64,6 +64,16 @@ def import_popular():
                 (person['name'] for person in credits_data['crew'] if person['job'] == 'Writer'),
                 "Неизвестно"
             )
+            if movie.get('poster_path'):
+                poster_url = f"https://image.tmdb.org/t/p/w500{movie['poster_path']}"
+                response = requests.get(poster_url, stream=True)
+
+                if response.status_code == 200:
+                    filename = f"poster_{movie['id']}.jpg"
+                    filepath = os.path.join('static', 'posters', filename)
+
+                    with open(filepath, 'wb') as f:
+                        f.write(response.content)
             film = Films(
                 title=movie['title'],
                 description=movie.get('overview', 'Нет описания'),
@@ -72,7 +82,7 @@ def import_popular():
                 duration=details_data.get('runtime', 0),
                 average_rating=movie.get('vote_average', 0),
                 premiere=movie.get('release_date', '')[:4],
-                poster_path=f"https://www.themoviedb.org/t/p/w500{movie['poster_path']}" if movie.get('poster_path') else None,
+                poster_path=f"posters/{filename}",
                 user_id=1
             )
             db_sess.add(film)
@@ -97,9 +107,17 @@ def index():
 def film_detail(film_id):
     db_sess = db_session.create_session()
     film = db_sess.query(Films).get(film_id)
+    reviews_with_users = db_sess.query(
+        Reviews,
+        User.username
+    ).join(
+        User, Reviews.user_id == User.id
+    ).filter(
+        Reviews.film_id == film_id
+    ).all()
     if not film:
         return abort(404)
-    return render_template("film_detail.html", film=film)
+    return render_template("film_detail.html", film=film, reviews_with_users=reviews_with_users)
 
 
 @app.route('/registration', methods=['GET', 'POST'])
