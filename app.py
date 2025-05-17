@@ -25,6 +25,8 @@ db_session.global_init("db/database.db")
 
 load_dotenv()
 
+os.makedirs('static/uploads', exist_ok=True)
+
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
